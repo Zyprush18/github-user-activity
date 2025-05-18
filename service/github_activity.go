@@ -9,43 +9,47 @@ import (
 	"github.com/Zyprush18/github-user-activity/models"
 )
 
-type Repsitory struct {
-	Name string
-}
-
-
-func Activity(name string) {
-	var data []models.Datas
-
+func GetDataFromApi(name string) ([]byte, error) {
 	url := fmt.Sprintf("https://api.github.com/users/%s/events", name)
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err.Error())
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 
 	respdata, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err.Error())
+		return nil, err
 	}
 
-	if err := json.Unmarshal(respdata, &data); err != nil {
-		fmt.Println(err.Error())
+	return respdata, nil
+}
+
+func ParseDataToSlice(dataByte []byte) ([]models.Datas, error){
+	var data []models.Datas
+
+	if err := json.Unmarshal(dataByte, &data); err != nil {
+		return nil, err
 	}
+	return data, nil
+}
 
-	var datas []Repsitory
-	var isidata Repsitory
+func Activity(data []models.Datas) {
+	isExistRepo := map[string]bool{}
+	countCommitRepo := map[string]int{}
 
-	for _, g := range data {
-		if g.Type == "PushEvent" && g.Payload.Commits != nil {
-			nama_repodia := g.Repo.Name
-			if nama_repodia != isidata.Name {
-				isidata.Name = nama_repodia
-				datas = append(datas, isidata)
+	for _, d := range data {
+		if d.Payload.Commits != nil && d.Type == "PushEvent" {
+			if !isExistRepo[d.Repo.Name] {
+				isExistRepo[d.Repo.Name] = true
 			}
+			countCommitRepo[d.Repo.Name] += len(d.Payload.Commits)
 		}
 	}
 
-	fmt.Println(datas)
+	for i, v := range countCommitRepo {
+		fmt.Printf("- Pushed %d to %s \n",v,i)
+	}
+
 }
