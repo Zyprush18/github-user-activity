@@ -28,6 +28,7 @@ type Repo struct {
 }
 
 type Payload struct {
+	Action string `json:"action"`
 	RepositiryId int `json:"repository_id,omitempty"`
 	PushId int `json:"push_id,omitempty"`
 	Size int `json:"size,omitempty"`

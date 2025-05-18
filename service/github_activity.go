@@ -26,7 +26,7 @@ func GetDataFromApi(name string) ([]byte, error) {
 	return respdata, nil
 }
 
-func ParseDataToSlice(dataByte []byte) ([]models.Datas, error){
+func ParseDataToSlice(dataByte []byte) ([]models.Datas, error) {
 	var data []models.Datas
 
 	if err := json.Unmarshal(dataByte, &data); err != nil {
@@ -45,11 +45,33 @@ func Activity(data []models.Datas) {
 				isExistRepo[d.Repo.Name] = true
 			}
 			countCommitRepo[d.Repo.Name] += len(d.Payload.Commits)
+
+		}
+
+		if d.Type == "IssuesEvent" && d.Payload.Action == "opened" {
+			if !isExistRepo[d.Repo.Name] {
+				isExistRepo[d.Repo.Name] = true
+				fmt.Printf("- Opened a new issue in %s \n", d.Repo.Name)
+			}
+		}
+
+		if d.Type == "WatchEvent" && d.Payload.Action == "started" {
+			if !isExistRepo[d.Repo.Name] {
+				isExistRepo[d.Repo.Name] = true
+				fmt.Printf("- Starred %s \n", d.Repo.Name)
+			}
+		}
+
+		if d.Type == "CreateEvent" {
+			if !isExistRepo[d.Repo.Name] {
+				isExistRepo[d.Repo.Name] = true
+				fmt.Printf("- Created %s \n", d.Repo.Name)
+			}
 		}
 	}
 
 	for i, v := range countCommitRepo {
-		fmt.Printf("- Pushed %d to %s \n",v,i)
+		fmt.Printf("- Pushed %d to %s \n", v, i)
 	}
 
 }

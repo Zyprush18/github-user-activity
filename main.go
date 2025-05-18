@@ -10,20 +10,21 @@ import (
 func main() {
 	argument := os.Args
 
-	
-	fetch, err := service.GetDataFromApi(argument[1])
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
+	if len(argument) > 1 {
+		fetch, err := service.GetDataFromApi(argument[1])
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		data, err := service.ParseDataToSlice(fetch)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		service.Activity(data)
 
-	data, err := service.ParseDataToSlice(fetch)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
+	} else {
+		fmt.Println("please enter ./github-activity <your_github_username>")
 	}
-
-	service.Activity(data)
-	
 
 }
